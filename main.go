@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -8,10 +9,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"github.com/stonoy/Appointment-App/internal/database"
 )
 
 type apiConfig struct {
 	fileServerHit int
+	jwt_secret    string
+	DB            *database.Queries
 }
 
 func main() {
@@ -25,16 +30,27 @@ func main() {
 		log.Fatal("No Port set")
 	}
 
+	jwt_secret := os.Getenv("JWT_SECRET")
+	if jwt_secret == "" {
+		log.Println("No jwt secret set")
+	}
+
 	// configure apiConfig
 	apiCfg := &apiConfig{
 		fileServerHit: 0,
+		jwt_secret:    jwt_secret,
 	}
 
 	db_conn := os.Getenv("DB_CONN")
 	if port == "" {
 		log.Printf("No Database set : %v", db_conn)
 	} else {
-		// ...
+		db, err := sql.Open("postgres", db_conn)
+		if err != nil {
+			log.Fatalf("can not open db connection : %v", err)
+		}
+
+		apiCfg.DB = database.New(db)
 
 		log.Println("Database Connected")
 	}
@@ -60,6 +76,10 @@ func main() {
 	// check health
 	apiRouter.Get("/checkhealth", apiCfg.checkOk)
 	apiRouter.Get("/checkerror", apiCfg.checkError)
+
+	// user
+	apiRouter.Post("/register", apiCfg.register)
+	apiRouter.Post("/login", apiCfg.login)
 
 	// mount sub router over main router
 	mainRouter.Mount("/api/v1", apiRouter)

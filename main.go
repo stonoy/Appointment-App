@@ -10,6 +10,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type apiConfig struct {
+	fileServerHit int
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -19,6 +23,20 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("No Port set")
+	}
+
+	// configure apiConfig
+	apiCfg := &apiConfig{
+		fileServerHit: 0,
+	}
+
+	db_conn := os.Getenv("DB_CONN")
+	if port == "" {
+		log.Printf("No Database set : %v", db_conn)
+	} else {
+		// ...
+
+		log.Println("Database Connected")
 	}
 
 	// main handler
@@ -36,10 +54,15 @@ func main() {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	mainRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		w.Write([]byte("Welcome"))
-	})
+	// sub router
+	apiRouter := chi.NewRouter()
+
+	// check health
+	apiRouter.Get("/checkhealth", apiCfg.checkOk)
+	apiRouter.Get("/checkerror", apiCfg.checkError)
+
+	// mount sub router over main router
+	mainRouter.Mount("/api/v1", apiRouter)
 
 	server := &http.Server{
 		Addr:    ":" + port,

@@ -108,7 +108,6 @@ func (cfg *apiConfig) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// verify the inputs
 	// check all inputs
 	if reqObj.Email == "" || reqObj.Password == "" || len(reqObj.Password) < 6 {
 		respWithError(w, 400, "Follow the input instructions")

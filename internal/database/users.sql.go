@@ -104,3 +104,31 @@ func (q *Queries) IsSetForAdmin(ctx context.Context) (bool, error) {
 	err := row.Scan(&user_count_admin)
 	return user_count_admin, err
 }
+
+const updateToDoctor = `-- name: UpdateToDoctor :one
+update users
+set role = $1,
+updated_at = NOW()
+where email = $2
+returning id, created_at, updated_at, name, email, password, role
+`
+
+type UpdateToDoctorParams struct {
+	Role  UserRole
+	Email string
+}
+
+func (q *Queries) UpdateToDoctor(ctx context.Context, arg UpdateToDoctorParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateToDoctor, arg.Role, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Role,
+	)
+	return i, err
+}

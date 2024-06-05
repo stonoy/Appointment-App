@@ -12,6 +12,49 @@ import (
 	"github.com/google/uuid"
 )
 
+type AppointmentStatus string
+
+const (
+	AppointmentStatusScheduled AppointmentStatus = "scheduled"
+	AppointmentStatusCompleted AppointmentStatus = "completed"
+	AppointmentStatusCancelled AppointmentStatus = "cancelled"
+)
+
+func (e *AppointmentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AppointmentStatus(s)
+	case string:
+		*e = AppointmentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AppointmentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullAppointmentStatus struct {
+	AppointmentStatus AppointmentStatus
+	Valid             bool // Valid is true if AppointmentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAppointmentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.AppointmentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AppointmentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAppointmentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AppointmentStatus), nil
+}
+
 type UserRole string
 
 const (
@@ -53,6 +96,48 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.UserRole), nil
+}
+
+type Appointment struct {
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Status         AppointmentStatus
+	PatientID      uuid.UUID
+	AvailabilityID uuid.UUID
+}
+
+type Availability struct {
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Location       string
+	Timing         time.Time
+	Duration       int32
+	MaxPatient     int32
+	CurrentPatient int32
+	Treatment      string
+	DoctorID       uuid.UUID
+}
+
+type Doctor struct {
+	ID            uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Name          string
+	Specialty     string
+	LicenseNumber string
+	UserID        uuid.UUID
+}
+
+type Patient struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Name      string
+	Age       int32
+	Gender    string
+	UserID    uuid.UUID
 }
 
 type User struct {

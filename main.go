@@ -83,7 +83,7 @@ func main() {
 
 	// patient
 	apiRouter.Post("/createpatient", apiCfg.onlyForAuthinticatedUser(apiCfg.createPatient))
-	apiRouter.Post("/createappointment/{availabilityId}", apiCfg.onlyForAuthinticatedUser(apiCfg.createAppointment))
+	apiRouter.Post("/createappointment", apiCfg.onlyForAuthinticatedUser(apiCfg.createAppointment))
 	apiRouter.Get("/getavailabilities", apiCfg.getAvailability)
 	apiRouter.Get("/getappointments", apiCfg.onlyForAuthinticatedUser(apiCfg.getAppointments))
 	apiRouter.Delete("/deleteappointments/{appointmentId}", apiCfg.onlyForAuthinticatedUser(apiCfg.DeleteAppointment))

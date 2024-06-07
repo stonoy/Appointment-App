@@ -1,44 +1,38 @@
 import React from 'react'
+import { Doctors, Pagination } from '../components'
 import { customFetch } from '../utils'
 import { redirect, useLoaderData } from 'react-router-dom'
-import { Appointment, Pagination } from '../components'
 import { toast } from 'react-toastify'
 
 export const loader = (store) => async() => {
   const token = store.getState().user.token
 
   try {
-    const resp = await customFetch('/getappointments', {
+    const resp = await customFetch("/getalldoctors", {
       headers : {
-        "Authorization": `Bearer ${token}`
+        "Authorization" : `Bearer ${token}`
       }
     })
-    // console.log(resp?.data)
     return resp?.data
   } catch (error) {
-    console.log(error?.response?.status)
+    const errMsg = error?.response?.data?.msg || "Error in getting doctors list"
     if (error?.response?.status === 401 || error?.response?.status === 403){
-        toast.error("Login to continue")
+        toast.error("Not Authorized")
         return redirect("/")
     }
 
-    if (error?.response?.status === 400){
-      toast.error("User not Created patient profile")
-      return redirect("/createpatient")
-  }
-
-    toast.error(error?.response?.data?.msg)
+    toast.error(errMsg)
     return null
   }
 }
 
-const Appointments = () => {
-  const {appointments, numOfPages, page} = useLoaderData()
+const AdminLanding = () => {
+  const {doctors, numOfPages, page} = useLoaderData()
 
-  if (appointments.length === 0){
+  if (doctors.length === 0){
     return (
       <div className="bg-gray-100">
-        <h1 className='text-xl'>No Appointments to display</h1>
+        <h1 className='text-xl'>No Doctor profile created</h1>
       </div>
     )
   }
@@ -49,7 +43,7 @@ const Appointments = () => {
       {/* Filter Section */}
       {/* <FilterSection isFilterApplied={isFilterApplied} myFilter={myFilter} handleOpenFilter={handleOpenFilter} handleSearch={handleSearch}/> */}
 
-      <Appointment appointments={appointments}/>
+      <Doctors doctors={doctors}/>
 
       {/* Pagination */}
       <Pagination numOfPages={numOfPages} page={page} />
@@ -59,4 +53,4 @@ const Appointments = () => {
   )
 }
 
-export default Appointments
+export default AdminLanding

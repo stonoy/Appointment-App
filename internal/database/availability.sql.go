@@ -87,7 +87,9 @@ func (q *Queries) DelCurrentPatient(ctx context.Context, id uuid.UUID) (Availabi
 }
 
 const getAvailability = `-- name: GetAvailability :many
-select id, created_at, updated_at, location, timing, duration, max_patient, current_patient, treatment, doctor_id from availability
+select a.id, a.created_at, a.updated_at, a.location, a.timing, a.duration, a.max_patient, a.current_patient, a.treatment, a.doctor_id,d.name,d.specialty from availability a
+inner join doctor d
+on a.doctor_id = d.id
 where location like $1 and timing between $2 and $3
 limit $4
 offset $5
@@ -101,7 +103,22 @@ type GetAvailabilityParams struct {
 	Offset   int32
 }
 
-func (q *Queries) GetAvailability(ctx context.Context, arg GetAvailabilityParams) ([]Availability, error) {
+type GetAvailabilityRow struct {
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Location       string
+	Timing         time.Time
+	Duration       int32
+	MaxPatient     int32
+	CurrentPatient int32
+	Treatment      string
+	DoctorID       uuid.UUID
+	Name           string
+	Specialty      string
+}
+
+func (q *Queries) GetAvailability(ctx context.Context, arg GetAvailabilityParams) ([]GetAvailabilityRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAvailability,
 		arg.Location,
 		arg.Timing,
@@ -113,9 +130,9 @@ func (q *Queries) GetAvailability(ctx context.Context, arg GetAvailabilityParams
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Availability
+	var items []GetAvailabilityRow
 	for rows.Next() {
-		var i Availability
+		var i GetAvailabilityRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.CreatedAt,
@@ -127,6 +144,8 @@ func (q *Queries) GetAvailability(ctx context.Context, arg GetAvailabilityParams
 			&i.CurrentPatient,
 			&i.Treatment,
 			&i.DoctorID,
+			&i.Name,
+			&i.Specialty,
 		); err != nil {
 			return nil, err
 		}

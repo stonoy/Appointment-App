@@ -39,6 +39,21 @@ type Availability struct {
 	DoctorID       uuid.UUID `json:"doctor_id"`
 }
 
+type AvailabilityPatient struct {
+	ID             uuid.UUID `json:"id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	Location       string    `json:"location"`
+	Timing         time.Time `json:"timing"`
+	Duration       int32     `json:"duration"`
+	MaxPatient     int32     `json:"max_patient"`
+	CurrentPatient int32     `json:"current_patient"`
+	Treatment      string    `json:"treatment"`
+	DoctorID       uuid.UUID `json:"doctor_id"`
+	Name           string    `json:"doctor_name"`
+	Specialty      string    `json:"specialty"`
+}
+
 type AppointmentResp struct {
 	ID             uuid.UUID                  `json:"id"`
 	CreatedAt      time.Time                  `json:"created_at"`
@@ -66,6 +81,29 @@ func doctorDbToResp(doctors []database.Doctor) []Doctor {
 			Specialty:     doctor.Specialty,
 			LicenseNumber: doctor.LicenseNumber,
 			UserID:        doctor.UserID,
+		})
+	}
+
+	return final
+}
+
+func availabilityPatientDbtoResp(availabilities []database.GetAvailabilityRow) []AvailabilityPatient {
+	final := []AvailabilityPatient{}
+
+	for _, availability := range availabilities {
+		final = append(final, AvailabilityPatient{
+			ID:             availability.ID,
+			CreatedAt:      availability.CreatedAt,
+			UpdatedAt:      availability.UpdatedAt,
+			Location:       availability.Location,
+			Timing:         availability.Timing,
+			Duration:       availability.Duration,
+			MaxPatient:     availability.MaxPatient,
+			CurrentPatient: availability.CurrentPatient,
+			Treatment:      availability.Treatment,
+			DoctorID:       availability.DoctorID,
+			Name:           availability.Name,
+			Specialty:      availability.Specialty,
 		})
 	}
 

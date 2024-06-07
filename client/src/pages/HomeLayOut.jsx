@@ -1,12 +1,14 @@
 import React from 'react'
 import { Outlet, useNavigation } from 'react-router-dom'
-import { Loader } from '../components'
+import { Header, Loader, Navbar } from '../components'
 
 const HomeLayOut = () => {
   const navigation = useNavigation()
   const isLoading = navigation.state === 'loading'
   return (
     <>
+      <Header/>
+      <Navbar/>
       {
         isLoading ?
         <Loader/> 

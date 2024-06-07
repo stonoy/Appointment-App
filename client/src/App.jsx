@@ -1,6 +1,17 @@
 import React from 'react'
 import {RouterProvider, createBrowserRouter} from 'react-router-dom'
-import {Appointments, ErrorPage, HomeLayOut, Landing, Login, Register, SingleAvailability} from './pages'
+import {About, Admin, AdminInsights, AdminLanding, Appointments, Availability, CreatePatient, ErrorPage, HomeLayOut, Landing, Login, Register} from './pages'
+import { store } from './store'
+
+// loaders
+import {loader as landingLoader} from './pages/Landing'
+import {loader as appointmentLoader} from './pages/Appointments'
+import {loader as adminLandingLoader} from './pages/AdminLanding'
+
+// actions
+import {action as loginAction} from './pages/Login'
+import {action as createAppointmentAction} from './pages/CreateAppointment'
+
 
 const router = createBrowserRouter([
   {
@@ -10,21 +21,51 @@ const router = createBrowserRouter([
     children : [
       {
         index : true,
-        element: <Landing/>
+        element: <Landing/>,
+        loader: landingLoader
+      },
+      {
+        path: 'about',
+        element: <About/>,
       },
       {
         path: 'availability',
-        element: <SingleAvailability/>,
+        element: <Availability/>,
+      },
+      {
+        path: 'createpatient',
+        element: <CreatePatient/>,
       },
       {
         path: 'appointments',
         element: <Appointments/>,
-      }
+        loader: appointmentLoader(store)
+      },
+      {
+        path: 'createappointment/:id',
+        action: createAppointmentAction(store),
+      },
+      {
+        path: 'admin',
+        element: <Admin/>,
+        children: [
+          {
+            index : true,
+            element: <AdminLanding/>,
+            loader: adminLandingLoader(store),
+          },
+          {
+            path: "insights",
+            element: <AdminInsights/>
+          },
+        ]
+      },
     ]
   },
   {
     path: '/login',
     element: <Login/>,
+    action: loginAction(store)
   },
   {
     path: '/register',

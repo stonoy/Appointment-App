@@ -17,7 +17,7 @@ func (cfg *apiConfig) onlyForAuthinticatedUser(givenFunc requiredFuncType) func(
 		// get token from authorization header
 		token, err := GetTokenFromHeader(r)
 		if err != nil {
-			respWithError(w, 400, fmt.Sprintf("Error in GetTokenFromHeader : %v", err))
+			respWithError(w, 401, fmt.Sprintf("Error in GetTokenFromHeader : %v", err))
 			return
 		}
 
@@ -61,7 +61,7 @@ func (cfg *apiConfig) onlyForDoctor(givenFunc requiredFuncTypeForDoctor) func(w 
 		// get token from authorization header
 		token, err := GetTokenFromHeader(r)
 		if err != nil {
-			respWithError(w, 400, fmt.Sprintf("Error in GetTokenFromHeader : %v", err))
+			respWithError(w, 401, fmt.Sprintf("Error in GetTokenFromHeader : %v", err))
 			return
 		}
 
@@ -109,7 +109,7 @@ func (cfg *apiConfig) onlyForAdmin(givenFunc func(w http.ResponseWriter, r *http
 		// get token from authorization header
 		token, err := GetTokenFromHeader(r)
 		if err != nil {
-			respWithError(w, 400, fmt.Sprintf("Error in GetTokenFromHeader : %v", err))
+			respWithError(w, 401, fmt.Sprintf("Error in GetTokenFromHeader : %v", err))
 			return
 		}
 

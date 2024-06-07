@@ -62,11 +62,21 @@ func (cfg *apiConfig) createPatient(w http.ResponseWriter, r *http.Request, user
 }
 
 func (cfg *apiConfig) createAppointment(w http.ResponseWriter, r *http.Request, user database.User) {
-	// get the avaliability id from url
-	availabilityIdStr := chi.URLParam(r, "availabilityId")
+	// get the inputs
+	type reqStruct struct {
+		Id string `json:"id"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	reqObj := reqStruct{}
+	err := decoder.Decode(&reqObj)
+	if err != nil {
+		respWithError(w, 400, fmt.Sprintf("Error decoding request : %v", err))
+		return
+	}
 
 	// convert str to uuid
-	availabilityId, err := GetUuidFromStr(availabilityIdStr)
+	availabilityId, err := GetUuidFromStr(reqObj.Id)
 	if err != nil {
 		respWithError(w, 400, fmt.Sprintf("Error in GetUuidFromStr : %v", err))
 		return
@@ -206,13 +216,13 @@ func (cfg *apiConfig) getAvailability(w http.ResponseWriter, r *http.Request) {
 
 	// send response
 	type respStruct struct {
-		Availabilities []Availability `json:"avaliabilities"`
-		Page           int32          `json:"page"`
-		NumOfPages     int            `json:"numOfPages"`
+		Availabilities []AvailabilityPatient `json:"avaliabilities"`
+		Page           int32                 `json:"page"`
+		NumOfPages     int                   `json:"numOfPages"`
 	}
 
 	respWithJson(w, 200, respStruct{
-		Availabilities: availabilityDbtoResp(allAvailability),
+		Availabilities: availabilityPatientDbtoResp(allAvailability),
 		Page:           page,
 		NumOfPages:     numOfPages,
 	})

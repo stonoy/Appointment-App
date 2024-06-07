@@ -18,7 +18,9 @@ where id = $1 and timing > NOW() and current_patient > 0
 returning *;
 
 -- name: GetAvailability :many
-select * from availability
+select a.*,d.name,d.specialty from availability a
+inner join doctor d
+on a.doctor_id = d.id
 where location like $1 and timing between $2 and $3
 limit $4
 offset $5;
